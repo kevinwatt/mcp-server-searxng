@@ -78,10 +78,10 @@ You need a local SearXNG instance running. To set it up:
 ## Quick Start
 
 ```bash
-# 建立設定目錄
+# Create config directory
 mkdir -p searxng
 
-# 建立設定檔
+# Create config file
 tee searxng/settings.yml << EOF
 use_default_settings: true
 
@@ -111,7 +111,7 @@ engines:
 server.limiter: false
 EOF
 
-# 啟動容器
+# Start container
 docker run -d \
   --name searxng \
   -p 8080:8080 \
@@ -119,35 +119,35 @@ docker run -d \
   searxng/searxng
 ```
 
-## 測試搜尋功能
+## Test Search Function
 
 ```bash
-# 使用 curl 測試 JSON API
+# Test JSON API with curl
 curl -v 'http://localhost:8080/search?q=test&format=json'
 
-# 或直接在瀏覽器訪問
+# Or visit in browser
 http://localhost:8080/search?q=test
 ```
 
-## 管理容器
+## Container Management
 
 ```bash
-# 停止容器
+# Stop container
 docker stop searxng
 
-# 移除容器
+# Remove container
 docker rm searxng
 
-# 查看容器日誌
+# View container logs
 docker logs searxng
 ```
 
-## 自訂設定
+## Custom Configuration
 
-編輯 `searxng/settings.yml` 可以:
-- 修改搜尋引擎列表
-- 調整安全設定
-- 設定 UI 語言
-- 更改 API 限制
+Edit `searxng/settings.yml` to:
+- Modify search engine list
+- Adjust security settings
+- Configure UI language
+- Change API limits
 
-詳細設定選項請參考 [SearXNG 官方文件](https://docs.searxng.org/)
+For detailed configuration options, see [SearXNG Documentation](https://docs.searxng.org/)
