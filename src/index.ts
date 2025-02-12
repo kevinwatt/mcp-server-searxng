@@ -92,17 +92,15 @@ async function searchWithFallback(params: any) {
   for (const instance of SEARXNG_INSTANCES) {
     try {
       const searchUrl = new URL('/search', instance);
-      Object.entries(searchParams).forEach(([key, value]) => {
-        if (value !== undefined) {
-          searchUrl.searchParams.append(key, String(value));
-        }
-      });
       
       const response = await fetch(searchUrl.toString(), {
+        method: 'POST',
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
           'User-Agent': 'MCP-SearXNG/1.0'
-        }
+        },
+        body: new URLSearchParams(searchParams).toString()
       });
 
       if (!response.ok) {
