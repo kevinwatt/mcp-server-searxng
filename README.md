@@ -73,13 +73,81 @@ This MCP server is licensed under the MIT License. See the LICENSE file for deta
 
 You need a local SearXNG instance running. To set it up:
 
-```bash
 # Run SearXNG with Docker
+
+## Quick Start
+
+```bash
+# 建立設定目錄
+mkdir -p searxng
+
+# 建立設定檔
+tee searxng/settings.yml << EOF
+use_default_settings: true
+
+server:
+  bind_address: "0.0.0.0"
+  port: 8080
+
+search:
+  safe_search: 0
+  formats:
+    - html
+    - json
+
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: d
+
+  - name: bing
+    engine: bing
+    shortcut: b
+
+server.limiter: false
+EOF
+
+# 啟動容器
 docker run -d \
   --name searxng \
   -p 8080:8080 \
-  -v "${PWD}/searxng:/etc/searxng" \
+  -v "$(pwd)/searxng:/etc/searxng" \
   searxng/searxng
 ```
 
-The server will connect to `http://localhost:8080` by default.
+## 測試搜尋功能
+
+```bash
+# 使用 curl 測試 JSON API
+curl -v 'http://localhost:8080/search?q=test&format=json'
+
+# 或直接在瀏覽器訪問
+http://localhost:8080/search?q=test
+```
+
+## 管理容器
+
+```bash
+# 停止容器
+docker stop searxng
+
+# 移除容器
+docker rm searxng
+
+# 查看容器日誌
+docker logs searxng
+```
+
+## 自訂設定
+
+編輯 `searxng/settings.yml` 可以:
+- 修改搜尋引擎列表
+- 調整安全設定
+- 設定 UI 語言
+- 更改 API 限制
+
+詳細設定選項請參考 [SearXNG 官方文件](https://docs.searxng.org/)
