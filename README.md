@@ -68,3 +68,18 @@ npm start
 ## License
 
 This MCP server is licensed under the MIT License. See the LICENSE file for details.
+
+## Prerequisites
+
+You need a local SearXNG instance running. To set it up:
+
+```bash
+# Run SearXNG with Docker
+docker run -d \
+  --name searxng \
+  -p 8080:8080 \
+  -v "${PWD}/searxng:/etc/searxng" \
+  searxng/searxng
+```
+
+The server will connect to `http://localhost:8080` by default.

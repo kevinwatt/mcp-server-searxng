@@ -15,9 +15,7 @@ function logError(message: string, error?: unknown) {
 
 // Primary SearXNG instances for fallback
 const SEARXNG_INSTANCES = [
-  'https://search.sapti.me',
-  'https://northboot.xyz', 
-  'https://s.mble.dk'
+  'http://localhost:8080'  // 主要使用本地實例
 ];
 
 const WEB_SEARCH_TOOL: Tool = {
