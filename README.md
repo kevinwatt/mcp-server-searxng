@@ -15,7 +15,7 @@ An MCP server implementation that integrates with SearXNG, providing privacy-foc
 ## Installation
 
 ```bash
-npm install -g @modelcontextprotocol/server-searxng
+npm install -g @kevinwatt/mcp-server-searxng
 ```
 
 ## Usage
@@ -26,21 +26,7 @@ npm install -g @modelcontextprotocol/server-searxng
 mcp-server-searxng
 ```
 
-### With Claude Desktop
-
-Add this to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "searxng": {
-      "command": "mcp-server-searxng"
-    }
-  }
-}
-```
-
-Or using npx:
+### With Dive Desktop
 
 ```json
 {
