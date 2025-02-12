@@ -38,7 +38,7 @@ const WEB_SEARCH_TOOL: Tool = {
       },
       language: {
         type: "string",
-        description: "Search language code (e.g. 'en', 'all')",
+        description: "Search language code (e.g. 'en', 'zh', 'jp', 'all')",
         default: "all"
       },
       categories: {
