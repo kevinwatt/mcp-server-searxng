@@ -87,6 +87,7 @@ use_default_settings: true
 
 server:
   bind_address: "0.0.0.0"
+  secret_key: "CHANGE_THIS_TO_SOMETHING_SECURE"  # Generate a random key
   port: 8080
 
 search:
