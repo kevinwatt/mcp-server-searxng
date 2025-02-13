@@ -1,6 +1,6 @@
 {
   "name": "@kevinwatt/mcp-server-searxng",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "MCP server for SearXNG meta search integration",
   "license": "MIT",
   "author": "Kevin Watt",
@@ -38,6 +38,7 @@
     "search",
     "meta-search",
     "claude",
+    "dive",
     "ai"
   ]
 }
