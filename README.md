@@ -1,4 +1,5 @@
 # SearXNG MCP Server
+[![smithery badge](https://smithery.ai/badge/@kevinwatt/mcp-server-searxng)](https://smithery.ai/server/@kevinwatt/mcp-server-searxng)
 
 An MCP server implementation that integrates with SearXNG, providing privacy-focused meta search capabilities.
 
@@ -14,6 +15,15 @@ An MCP server implementation that integrates with SearXNG, providing privacy-foc
 
 ## Installation
 
+### Installing via Smithery
+
+To install SearXNG MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@kevinwatt/mcp-server-searxng):
+
+```bash
+npx -y @smithery/cli install @kevinwatt/mcp-server-searxng --client claude
+```
+
+### Manual Installation
 ```bash
 npm install -g @kevinwatt/mcp-server-searxng
 ```
