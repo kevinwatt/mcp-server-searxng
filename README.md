@@ -26,7 +26,10 @@ npm install -g @kevinwatt/mcp-server-searxng
 mcp-server-searxng
 ```
 
-### With Dive Desktop
+### With [Dive Desktop](https://github.com/OpenAgentPlatform/Dive)
+
+1. Click "+ Add MCP Server" in Dive Desktop
+2. Copy and paste this configuration:
 
 ```json
 {
@@ -41,6 +44,8 @@ mcp-server-searxng
   }
 }
 ```
+
+3. Click "Save" to install the MCP server
 
 ## Tool Documentation
 
