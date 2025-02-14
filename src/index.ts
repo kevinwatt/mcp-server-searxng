@@ -71,7 +71,7 @@ const WEB_SEARCH_TOOL: Tool = {
 const server = new Server(
   {
     name: "kevinwatt/mcp-server-searxng",
-    version: "0.3.3",
+    version: "0.3.4",
     description: "SearXNG meta search integration for MCP"
   },
   {
@@ -214,18 +214,13 @@ export async function runServer() {
   try {
     await server.connect(transport);
     console.error("SearXNG Search MCP Server running on stdio");
-    // 保持連接開啟
-    await new Promise(() => {});  // 永不解析的 Promise
   } catch (error) {
     logError('Fatal error running server', error);
     process.exit(1);
   }
 }
 
-// 只在直接運行時執行
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runServer();
-}
+runServer();
 
 export { 
   formatSearchResult, 
