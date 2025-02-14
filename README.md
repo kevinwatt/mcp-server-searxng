@@ -157,3 +157,29 @@ Edit `searxng/settings.yml` to:
 - Change API limits
 
 For detailed configuration options, see [SearXNG Documentation](https://docs.searxng.org/)
+
+## Environment Variables
+
+- `SEARXNG_INSTANCES`: Comma-separated list of SearXNG instances URLs
+  ```json
+  {
+    "mcpServers": {
+      "searxng": {
+        "name": "searxng",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@kevinwatt/mcp-server-searxng"
+        ],
+        "env": {
+          "SEARXNG_INSTANCES": "http://localhost:8080,https://searx.example.com",
+          "SEARXNG_USER_AGENT": "CustomBot/1.0"
+        }
+      }
+    }
+  }
+  ```
+  Default: `http://localhost:8080`
+
+- `SEARXNG_USER_AGENT`: Custom User-Agent header for requests
+  Default: `MCP-SearXNG/1.0`

@@ -14,9 +14,9 @@ function logError(message: string, error?: unknown) {
 }
 
 // Primary SearXNG instances for fallback
-const SEARXNG_INSTANCES = [
-  'http://localhost:8080'  // 主要使用本地實例
-];
+let SEARXNG_INSTANCES = process.env.SEARXNG_INSTANCES 
+  ? process.env.SEARXNG_INSTANCES.split(',')
+  : ['http://localhost:8080'];  // Default to localhost if not specified
 
 const WEB_SEARCH_TOOL: Tool = {
   name: "web_search",
@@ -67,8 +67,8 @@ const WEB_SEARCH_TOOL: Tool = {
 // Server implementation
 const server = new Server(
   {
-    name: "example-servers/searxng-search",
-    version: "0.1.0",
+    name: "kevinwatt/mcp-server-searxng",
+    version: "0.3.0",
   },
   {
     capabilities: {
@@ -76,6 +76,13 @@ const server = new Server(
     },
   },
 );
+
+// HTTP headers configuration
+const DEFAULT_HEADERS = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/x-www-form-urlencoded',
+  'User-Agent': process.env.SEARXNG_USER_AGENT || 'MCP-SearXNG/1.0'
+};
 
 // Helper function to try different instances
 async function searchWithFallback(params: any) {
@@ -93,34 +100,66 @@ async function searchWithFallback(params: any) {
     try {
       const searchUrl = new URL('/search', instance);
       
-      const response = await fetch(searchUrl.toString(), {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'MCP-SearXNG/1.0'
-        },
-        body: new URLSearchParams(searchParams).toString()
-      });
+      // Add timeout control
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seconds timeout
 
-      if (!response.ok) {
-        logError(`${instance} returned ${response.status}`);
-        continue;
+      try {
+        const response = await fetch(searchUrl.toString(), {
+          method: 'POST',
+          headers: DEFAULT_HEADERS,
+          body: new URLSearchParams(searchParams).toString(),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          logError(`${instance} returned ${response.status}`);
+          continue;
+        }
+
+        const data = await response.json();
+        if (!data.results?.length) {
+          logError(`${instance} returned no results`);
+          continue;
+        }
+
+        return data;
+      } finally {
+        clearTimeout(timeoutId);
       }
-
-      const data = await response.json();
-      if (!data.results?.length) {
-        logError(`${instance} returned no results`);
-        continue;
-      }
-
-      return data;
     } catch (error) {
       logError(`Failed to fetch from ${instance}`, error);
       continue;
     }
   }
   throw new Error("All SearXNG instances failed");
+}
+
+interface SearchResult {
+  title: string;
+  content?: string;
+  url: string;
+  engine?: string;
+}
+
+// Format search result
+function formatSearchResult(result: SearchResult) {
+  const parts = [
+    `Title: ${result.title}`,
+    `URL: ${result.url}`
+  ];
+
+  if (result.content) {
+    parts.push(`Content: ${result.content}`);
+  }
+
+  if (result.engine) {
+    parts.push(`Source: ${result.engine}`);
+  }
+
+  return parts.join('\n');
 }
 
 // Tool handlers
@@ -136,14 +175,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       throw new Error("Invalid tool or arguments");
     }
 
+    if (!isWebSearchArgs(args)) {
+      throw new Error("Invalid arguments for web_search");
+    }
+
     const results = await searchWithFallback(args);
     
     return {
       content: [{ 
         type: "text", 
-        text: results.results.map((r: any) => 
-          `Title: ${r.title}\nURL: ${r.url}\n${r.content ? `Content: ${r.content}\n` : ''}${r.engine ? `Source: ${r.engine}` : ''}`
-        ).join('\n\n')
+        text: results.results.map(formatSearchResult).join('\n\n')
       }],
       isError: false,
     };
@@ -156,8 +197,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-// Start server with error handling
-async function runServer() {
+function isWebSearchArgs(args: unknown): args is {
+  query: string;
+  page?: number;
+  language?: string;
+  categories?: string[];
+  time_range?: string;
+  safesearch?: number;
+} {
+  return (
+    typeof args === "object" &&
+    args !== null &&
+    "query" in args &&
+    typeof (args as { query: string }).query === "string"
+  );
+}
+
+// 修改 runServer 為可選的運行
+export async function runServer() {
   const transport = new StdioServerTransport();
   try {
     await server.connect(transport);
@@ -168,4 +225,14 @@ async function runServer() {
   }
 }
 
-runServer();
+// 只在直接運行時執行
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runServer();
+}
+
+export { 
+  formatSearchResult, 
+  isWebSearchArgs, 
+  searchWithFallback,
+  SEARXNG_INSTANCES
+};
