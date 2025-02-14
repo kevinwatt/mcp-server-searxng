@@ -4,7 +4,7 @@ import {
   isWebSearchArgs, 
   searchWithFallback,
   SEARXNG_INSTANCES
-} from './index';
+} from './index.js';
 
 describe('SearXNG MCP Server', () => {
   describe('formatSearchResult', () => {

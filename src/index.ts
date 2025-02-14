@@ -68,7 +68,7 @@ const WEB_SEARCH_TOOL: Tool = {
 const server = new Server(
   {
     name: "kevinwatt/mcp-server-searxng",
-    version: "0.3.0",
+    version: "0.3.1",
   },
   {
     capabilities: {
