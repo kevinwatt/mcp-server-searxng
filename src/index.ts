@@ -14,9 +14,12 @@ function logError(message: string, error?: unknown) {
 }
 
 // Primary SearXNG instances for fallback
-let SEARXNG_INSTANCES = process.env.SEARXNG_INSTANCES 
+const SEARXNG_INSTANCES = process.env.SEARXNG_INSTANCES 
   ? process.env.SEARXNG_INSTANCES.split(',')
-  : ['http://localhost:8080'];  // Default to localhost if not specified
+  : ['http://localhost:8080'];
+
+// HTTP headers with user agent from env
+const USER_AGENT = process.env.SEARXNG_USER_AGENT || 'MCP-SearXNG/1.0';
 
 const WEB_SEARCH_TOOL: Tool = {
   name: "web_search",
@@ -68,24 +71,15 @@ const WEB_SEARCH_TOOL: Tool = {
 const server = new Server(
   {
     name: "kevinwatt/mcp-server-searxng",
-    version: "0.3.2",
+    version: "0.3.3",
+    description: "SearXNG meta search integration for MCP"
   },
   {
     capabilities: {
-      tools: {
-        web_search: WEB_SEARCH_TOOL
-      },
-      resources: {},
+      tools: {},
     },
   },
 );
-
-// HTTP headers configuration
-const DEFAULT_HEADERS = {
-  'Accept': 'application/json',
-  'Content-Type': 'application/x-www-form-urlencoded',
-  'User-Agent': process.env.SEARXNG_USER_AGENT || 'MCP-SearXNG/1.0'
-};
 
 // Helper function to try different instances
 async function searchWithFallback(params: any) {
@@ -103,19 +97,16 @@ async function searchWithFallback(params: any) {
     try {
       const searchUrl = new URL('/search', instance);
       
-      // Add timeout control
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seconds timeout
-
       try {
         const response = await fetch(searchUrl.toString(), {
           method: 'POST',
-          headers: DEFAULT_HEADERS,
-          body: new URLSearchParams(searchParams).toString(),
-          signal: controller.signal
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': USER_AGENT
+          },
+          body: new URLSearchParams(searchParams).toString()
         });
-
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
           logError(`${instance} returned ${response.status}`);
@@ -129,8 +120,9 @@ async function searchWithFallback(params: any) {
         }
 
         return data;
-      } finally {
-        clearTimeout(timeoutId);
+      } catch (error) {
+        logError(`Failed to fetch from ${instance}`, error);
+        continue;
       }
     } catch (error) {
       logError(`Failed to fetch from ${instance}`, error);
@@ -167,7 +159,7 @@ function formatSearchResult(result: SearchResult) {
 
 // Tool handlers
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [WEB_SEARCH_TOOL],
+  tools: [WEB_SEARCH_TOOL]
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -175,7 +167,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
     if (name !== "web_search" || !args) {
-      throw new Error("Invalid tool or arguments");
+      throw new Error("Invalid tool or arguments: expected 'web_search'");
     }
 
     if (!isWebSearchArgs(args)) {
@@ -222,6 +214,8 @@ export async function runServer() {
   try {
     await server.connect(transport);
     console.error("SearXNG Search MCP Server running on stdio");
+    // 保持連接開啟
+    await new Promise(() => {});  // 永不解析的 Promise
   } catch (error) {
     logError('Fatal error running server', error);
     process.exit(1);

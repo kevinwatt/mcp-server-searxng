@@ -1,6 +1,6 @@
 {
   "name": "@kevinwatt/mcp-server-searxng",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "MCP server for SearXNG meta search integration",
   "license": "MIT",
   "author": "Dewei Yen",
