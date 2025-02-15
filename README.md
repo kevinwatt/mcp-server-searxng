@@ -146,7 +146,15 @@ docker rm searxng
 
 # View container logs
 docker logs searxng
+
+# Enable auto-start on boot
+docker update --restart always searxng
 ```
+
+The `--restart always` flag ensures that:
+- Container starts automatically when Docker daemon starts
+- Container restarts automatically if it crashes
+- Container restarts automatically if it is stopped unless explicitly stopped by user
 
 ## Custom Configuration
 

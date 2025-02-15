@@ -71,7 +71,7 @@ const WEB_SEARCH_TOOL: Tool = {
 const server = new Server(
   {
     name: "kevinwatt/mcp-server-searxng",
-    version: "0.3.4",
+    version: "0.3.5",
     description: "SearXNG meta search integration for MCP"
   },
   {
@@ -109,7 +109,7 @@ async function searchWithFallback(params: any) {
         });
 
         if (!response.ok) {
-          logError(`${instance} returned ${response.status}`);
+          logError(`${instance} returned ${response.status}. Please check if SearXNG is running.`);
           continue;
         }
 
@@ -121,7 +121,7 @@ async function searchWithFallback(params: any) {
 
         return data;
       } catch (error) {
-        logError(`Failed to fetch from ${instance}`, error);
+        logError(`Failed to connect to ${instance}. Please check if SearXNG is running.`, error);
         continue;
       }
     } catch (error) {
@@ -129,7 +129,7 @@ async function searchWithFallback(params: any) {
       continue;
     }
   }
-  throw new Error("All SearXNG instances failed");
+  throw new Error("All SearXNG instances failed. Please ensure SearXNG is running on one of these instances: " + SEARXNG_INSTANCES.join(', '));
 }
 
 interface SearchResult {
