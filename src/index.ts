@@ -222,10 +222,8 @@ export async function runServer() {
   }
 }
 
-// 只在直接執行時才運行伺服器
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runServer();
-}
+runServer();
+
 
 export { 
   formatSearchResult, 
