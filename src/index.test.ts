@@ -1,4 +1,7 @@
 import { jest } from '@jest/globals';
+import type { Response } from 'node-fetch';
+import nock from 'nock';
+
 import { 
   formatSearchResult, 
   isWebSearchArgs, 
@@ -57,38 +60,28 @@ describe('SearXNG MCP Server', () => {
 
   describe('searchWithFallback', () => {
     beforeEach(() => {
-      // Setup fetch mock with correct type
-      global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
-      // Override SEARXNG_INSTANCES to include two instances for fallback
+      nock.cleanAll();
       SEARXNG_INSTANCES.length = 0;
-      SEARXNG_INSTANCES.push('http://instance1', 'http://instance2');
-    });
-
-    afterEach(() => {
-      jest.resetAllMocks();
+      SEARXNG_INSTANCES.push('https://instance1', 'https://instance2');
     });
 
     it('should try multiple instances on failure', async () => {
-      const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
-      
-      // Mock first call to fail
-      mockFetch.mockImplementationOnce(() => Promise.reject(new Error('First instance failed')));
-      
-      // Mock second call to succeed
-      mockFetch.mockImplementationOnce(() => 
-        Promise.resolve({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({
-            results: [{
-              title: 'Test',
-              url: 'https://test.com',
-              content: 'Test content',
-              engine: 'test-engine'
-            }]
-          })
-        } as Response)
-      );
+      // 第一個實例返回 500
+      nock('https://instance1')
+        .post('/search')
+        .reply(500);
+
+      // 第二個實例返回成功結果
+      nock('https://instance2')
+        .post('/search')
+        .reply(200, {
+          results: [{
+            title: 'Test',
+            url: 'https://test.com',
+            content: 'Test content',
+            engine: 'test-engine'
+          }]
+        });
 
       const result = await searchWithFallback({
         query: 'test'
@@ -96,19 +89,17 @@ describe('SearXNG MCP Server', () => {
 
       expect(result.results).toBeDefined();
       expect(result.results.length).toBe(1);
-      expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
     it('should handle no results', async () => {
-      const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
-      
-      mockFetch.mockImplementation(() => 
-        Promise.resolve({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({ results: [] })
-        } as Response)
-      );
+      // 改用 nock 來模擬 no results 的情況
+      nock('https://instance1')
+        .post('/search')
+        .reply(200, { results: [] });
+
+      nock('https://instance2')
+        .post('/search')
+        .reply(200, { results: [] });
 
       await expect(searchWithFallback({
         query: 'test'

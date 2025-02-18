@@ -169,25 +169,33 @@ For detailed configuration options, see [SearXNG Documentation](https://docs.sea
 ## Environment Variables
 
 - `SEARXNG_INSTANCES`: Comma-separated list of SearXNG instances URLs
-  ```json
-  {
-    "mcpServers": {
-      "searxng": {
-        "name": "searxng",
-        "command": "npx",
-        "args": [
-          "-y",
-          "@kevinwatt/mcp-server-searxng"
-        ],
-        "env": {
-          "SEARXNG_INSTANCES": "http://localhost:8080,https://searx.example.com",
-          "SEARXNG_USER_AGENT": "CustomBot/1.0"
-        }
-      }
-    }
-  }
-  ```
   Default: `http://localhost:8080`
 
 - `SEARXNG_USER_AGENT`: Custom User-Agent header for requests
   Default: `MCP-SearXNG/1.0`
+
+- `NODE_TLS_REJECT_UNAUTHORIZED`: Set to '0' to bypass SSL certificate verification (for development with self-signed certificates)
+  Default: undefined (SSL verification enabled)
+
+Example configuration with all options:
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "name": "searxng",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@kevinwatt/mcp-server-searxng"
+      ],
+      "env": {
+        "SEARXNG_INSTANCES": "http://localhost:8080,https://searx.example.com",
+        "SEARXNG_USER_AGENT": "CustomBot/1.0",
+        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
+      }
+    }
+  }
+}
+```
+
+> ⚠️ Warning: Disabling SSL certificate verification is not recommended in production environments.
