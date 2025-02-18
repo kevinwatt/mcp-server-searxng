@@ -9,7 +9,8 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import { Agent } from 'node:https';
+import { Agent as HttpsAgent } from 'node:https';
+import { Agent as HttpAgent } from 'node:http';
 
 // Add console error wrapper
 function logError(message: string, error?: unknown) {
@@ -24,10 +25,11 @@ const SEARXNG_INSTANCES = process.env.SEARXNG_INSTANCES
 // HTTP headers with user agent from env
 const USER_AGENT = process.env.SEARXNG_USER_AGENT || 'MCP-SearXNG/1.0';
 
-// Add HTTPS agent configuration
-const httpsAgent = new Agent({
+// Add HTTP/HTTPS agent configuration
+const httpsAgent = new HttpsAgent({
   rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0'
 });
+const httpAgent = new HttpAgent();
 
 const WEB_SEARCH_TOOL: Tool = {
   name: "web_search",
@@ -111,7 +113,7 @@ async function searchWithFallback(params: any) {
           'Content-Type': 'application/x-www-form-urlencoded',
           'User-Agent': USER_AGENT
         },
-        agent: httpsAgent,
+        agent: searchUrl.protocol === 'https:' ? httpsAgent : httpAgent,
         body: new URLSearchParams(searchParams).toString()
       });
 
