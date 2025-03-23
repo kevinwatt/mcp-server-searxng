@@ -64,8 +64,8 @@ const WEB_SEARCH_TOOL: Tool = {
       },
       time_range: {
         type: "string",
-        enum: ["", "day", "week", "month", "year"],
-        default: ""
+        enum: ["all_time", "day", "week", "month", "year"],
+        default: "all_time"
       },
       safesearch: {
         type: "number",
@@ -98,7 +98,7 @@ async function searchWithFallback(params: any) {
     pageno: params.page || 1,
     language: params.language || 'all',
     categories: params.categories?.join(',') || 'general',
-    time_range: params.time_range || '',
+    time_range: params.time_range === 'all_time' ? '' : (params.time_range || ''),
     safesearch: params.safesearch ?? 1,
     format: 'json'
   };
