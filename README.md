@@ -2,6 +2,8 @@
 
 An MCP server implementation that integrates with SearXNG, providing privacy-focused meta search capabilities.
 
+<a href="https://glama.ai/mcp/servers/fjoqf30os0"><img width="380" height="200" src="https://glama.ai/mcp/servers/fjoqf30os0/badge" alt="SearXNG Server MCP server" /></a>
+
 ## Features
 
 - **Meta Search**: Combines results from multiple search engines
