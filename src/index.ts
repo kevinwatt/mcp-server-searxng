@@ -105,7 +105,10 @@ async function searchWithFallback(params: any) {
 
   for (const instance of SEARXNG_INSTANCES) {
     try {
-      const searchUrl = new URL('./search', instance);
+      // Ensure a trailing slash so relative resolution preserves any base path
+      // (e.g. reverse proxies using path-based routing).
+      const base = instance.endsWith('/') ? instance : `${instance}/`;
+      const searchUrl = new URL('./search', base);
       const response = await fetch(searchUrl.toString(), {
         method: 'POST',
         headers: {
