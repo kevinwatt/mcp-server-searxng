@@ -105,5 +105,26 @@ describe('SearXNG MCP Server', () => {
         query: 'test'
       })).rejects.toThrow('All SearXNG instances failed');
     });
+
+    it('should resolve urls correctly', async() => {
+      SEARXNG_INSTANCES.splice(0, SEARXNG_INSTANCES.length);
+      SEARXNG_INSTANCES.push('https://instance1/relative/')
+
+      nock('https://instance1')
+        .post('/relative/search')
+        .reply(200, { results: [{
+            title: 'Test',
+            url: 'https://test.com',
+            content: 'Test content',
+            engine: 'test-engine'
+          }]
+        });
+
+      const result = await searchWithFallback({
+        query: 'test'
+      });
+      expect(result.results).toBeDefined();
+      expect(result.results.length).toBe(1);
+    });
   });
 }); 

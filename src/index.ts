@@ -105,7 +105,7 @@ async function searchWithFallback(params: any) {
 
   for (const instance of SEARXNG_INSTANCES) {
     try {
-      const searchUrl = new URL('/search', instance);
+      const searchUrl = new URL('./search', instance);
       const response = await fetch(searchUrl.toString(), {
         method: 'POST',
         headers: {
