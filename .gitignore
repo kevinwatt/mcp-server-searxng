@@ -27,3 +27,5 @@ build/
 .Trashes
 ehthumbs.db
 Thumbs.db 
+# Local agent instructions
+CLAUDE.md
