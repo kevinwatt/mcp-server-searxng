@@ -91,8 +91,9 @@ describe('SearXNG MCP Server', () => {
       expect(result.results.length).toBe(1);
     });
 
-    it('should handle no results', async () => {
-      // 改用 nock 來模擬 no results 的情況
+    it('should return an empty result set (not throw) when a reachable instance has no results', async () => {
+      // A 200 response with no results is a valid empty search, NOT an outage —
+      // it must not be reported as "All SearXNG instances failed".
       nock('https://instance1')
         .post('/search')
         .reply(200, { results: [] });
@@ -100,6 +101,25 @@ describe('SearXNG MCP Server', () => {
       nock('https://instance2')
         .post('/search')
         .reply(200, { results: [] });
+
+      const result = await searchWithFallback({
+        query: 'test'
+      });
+
+      expect(result.results).toBeDefined();
+      expect(result.results.length).toBe(0);
+    });
+
+    it('should still throw when every instance is unreachable', async () => {
+      // No instance responded successfully → a genuine outage, still surfaced as
+      // an error so it is distinguishable from an empty result.
+      nock('https://instance1')
+        .post('/search')
+        .reply(500);
+
+      nock('https://instance2')
+        .post('/search')
+        .replyWithError('connection refused');
 
       await expect(searchWithFallback({
         query: 'test'

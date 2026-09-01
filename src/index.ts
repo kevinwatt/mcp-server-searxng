@@ -103,6 +103,11 @@ async function searchWithFallback(params: any) {
     format: 'json'
   };
 
+  // Track whether any instance was actually reached (responded 200 with valid
+  // JSON) but simply had no results. This lets us tell "no results" apart from
+  // "every instance is down" — the two must not be conflated (see below).
+  let reachedInstance = false;
+
   for (const instance of SEARXNG_INSTANCES) {
     try {
       // Ensure a trailing slash so relative resolution preserves any base path
@@ -127,7 +132,12 @@ async function searchWithFallback(params: any) {
 
       const data = await response.json();
       if (!data.results?.length) {
+        // The instance is reachable and answered — it simply has no results for
+        // this query. Record that we reached a working instance and keep trying
+        // the others (one may have hits), but do NOT treat a valid empty
+        // response as an instance failure.
         logError(`${instance} returned no results`);
+        reachedInstance = true;
         continue;
       }
 
@@ -137,6 +147,15 @@ async function searchWithFallback(params: any) {
       continue;
     }
   }
+
+  if (reachedInstance) {
+    // At least one instance responded successfully but with no results. Return an
+    // empty result set — an empty search is a valid outcome, distinct from every
+    // instance being unreachable. Throwing "All SearXNG instances failed" here
+    // would mislabel a healthy-but-empty search as an outage.
+    return { results: [] };
+  }
+
   throw new Error("All SearXNG instances failed. Please ensure SearXNG is running on one of these instances: " + SEARXNG_INSTANCES.join(', '));
 }
 
@@ -198,10 +217,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     const results = await searchWithFallback(args);
-    
+
+    if (!results.results?.length) {
+      // A reachable instance returned no results — a successful, empty search,
+      // NOT an error. Report it clearly so callers don't mistake "no matches"
+      // for "search is down".
+      return {
+        content: [{
+          type: "text",
+          text: `No results found for "${(args as { query: string }).query}".`
+        }],
+        isError: false,
+      };
+    }
+
     return {
-      content: [{ 
-        type: "text", 
+      content: [{
+        type: "text",
         text: results.results.map(formatSearchResult).join('\n\n')
       }],
       isError: false,
