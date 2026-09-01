@@ -131,7 +131,15 @@ async function searchWithFallback(params: any) {
       }
 
       const data = await response.json();
-      if (!data.results?.length) {
+      if (!Array.isArray(data.results)) {
+        // 200 with a body that is not a SearXNG search response — an auth
+        // portal, a proxy error envelope. The instance is not usable, so treat
+        // it as a failure rather than reporting it as an empty search.
+        logError(`${instance} returned a malformed response (no results array)`);
+        continue;
+      }
+
+      if (data.results.length === 0) {
         // The instance is reachable and answered — it simply has no results for
         // this query. Record that we reached a working instance and keep trying
         // the others (one may have hits), but do NOT treat a valid empty
@@ -225,7 +233,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return {
         content: [{
           type: "text",
-          text: `No results found for "${(args as { query: string }).query}".`
+          text: `No results found for "${args.query}".`
         }],
         isError: false,
       };

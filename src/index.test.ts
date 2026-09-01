@@ -110,6 +110,23 @@ describe('SearXNG MCP Server', () => {
       expect(result.results.length).toBe(0);
     });
 
+    it('should treat a 200 without a results array as a failed instance', async () => {
+      // An auth portal or proxy error envelope answers 200 with JSON that is not
+      // a search response. That instance is unusable, so it must not be counted
+      // as "reached but empty" and reported as a successful empty search.
+      nock('https://instance1')
+        .post('/search')
+        .reply(200, { error: 'auth required' });
+
+      nock('https://instance2')
+        .post('/search')
+        .reply(200, { error: 'auth required' });
+
+      await expect(searchWithFallback({
+        query: 'test'
+      })).rejects.toThrow('All SearXNG instances failed');
+    });
+
     it('should still throw when every instance is unreachable', async () => {
       // No instance responded successfully → a genuine outage, still surfaced as
       // an error so it is distinguishable from an empty result.
