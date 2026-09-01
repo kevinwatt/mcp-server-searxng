@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   envelope) is treated as a failed instance rather than as an empty search
 - The version the server reports in its MCP handshake was hardcoded and six releases
   behind `package.json`; it is now synced automatically on `npm version`
+- The published package no longer ships the compiled test file; `tsconfig.json` had no
+  `exclude`, so `src/index.test.ts` was built into `dist/` and packed into the tarball
 
 ### Removed
 - Smithery packaging (`smithery.yaml`, README badge and install section). It was also
