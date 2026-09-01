@@ -24,6 +24,7 @@
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "build": "tsc && shx chmod +x dist/src/*.js",
     "prepare": "npm run build",
+    "version": "node scripts/sync-version.mjs && git add src/index.ts",
     "watch": "tsc --watch"
   },
   "dependencies": {
