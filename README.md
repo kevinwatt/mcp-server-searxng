@@ -1,5 +1,4 @@
 # SearXNG MCP Server
-[![smithery badge](https://smithery.ai/badge/@kevinwatt/mcp-server-searxng)](https://smithery.ai/server/@kevinwatt/mcp-server-searxng)
 
 An MCP server implementation that integrates with SearXNG, providing privacy-focused meta search capabilities.
 
@@ -15,15 +14,6 @@ An MCP server implementation that integrates with SearXNG, providing privacy-foc
 
 ## Installation
 
-### Installing via Smithery
-
-To install SearXNG MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@kevinwatt/mcp-server-searxng):
-
-```bash
-npx -y @smithery/cli install @kevinwatt/mcp-server-searxng --client claude
-```
-
-### Manual Installation
 ```bash
 npm install -g @kevinwatt/mcp-server-searxng
 ```
@@ -67,8 +57,16 @@ mcp-server-searxng
     - `language` (string, optional): Language code (e.g., 'en', 'all', default: 'all')
     - `categories` (array, optional): Search categories (default: ['general'])
       - Available: "general", "news", "science", "files", "images", "videos", "music", "social media", "it"
-    - `time_range` (string, optional): Time filter (day/week/month/year)
+    - `time_range` (string, optional): Time filter (all_time/day/week/month/year, default: 'all_time')
     - `safesearch` (number, optional): Safe search level (0: None, 1: Moderate, 2: Strict, default: 1)
+  - Behavior:
+    - Instances listed in `SEARXNG_INSTANCES` are tried in order; the first one that
+      answers with results wins.
+    - An instance that is reachable but has no matches returns
+      `No results found for "<query>".` — an empty search is a normal result, not an error.
+    - The error `All SearXNG instances failed` is returned only when no instance was
+      reachable at all: connection errors, non-2xx responses, or replies that aren't a
+      valid SearXNG JSON search response.
 
 ## Development
 
@@ -76,9 +74,12 @@ mcp-server-searxng
 git clone https://github.com/kevinwatt/mcp-server-searxng.git
 cd mcp-server-searxng
 npm install
-npm run build
-npm start
+npm run build            # compiles to dist/src/
+npm test                 # unit tests; HTTP is mocked, no live instance needed
+node dist/src/index.js   # run the server on stdio
 ```
+
+Run a single test case with `npm test -- -t "should resolve urls correctly"`.
 
 ## License
 
@@ -178,7 +179,9 @@ For detailed configuration options, see [SearXNG Documentation](https://docs.sea
 
 ## Environment Variables
 
-- `SEARXNG_INSTANCES`: Comma-separated list of SearXNG instances URLs
+- `SEARXNG_INSTANCES`: Comma-separated list of SearXNG instance URLs, tried in order as
+  fallbacks. An entry may include a base path for path-based reverse proxy routing
+  (e.g. `https://example.com/searx`), with or without a trailing slash.
   Default: `http://localhost:8080`
 
 - `SEARXNG_USER_AGENT`: Custom User-Agent header for requests
